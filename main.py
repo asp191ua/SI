@@ -4,6 +4,7 @@ from mapa import *
 from pygame.locals import *
 from nodo import *
 from AEstrella import *
+from AEstrellaEpsilon import *
 
 
 MARGEN=5
@@ -21,44 +22,44 @@ AMARILLO=(255, 255, 0)
 # ---------------------------------------------------------------------
 
 # Devuelve si una casilla del mapa se puede seleccionar como destino o como origen
-def bueno(mapi, pos):
+def bueno(mapa, pos):
     res= False
     
-    if mapi.getCelda(pos.getFila(),pos.getCol())==0 or mapi.getCelda(pos.getFila(),pos.getCol())==4 or mapi.getCelda(pos.getFila(),pos.getCol())==5:
+    if mapa.getCelda(pos.getFila(),pos.getCol())==0 or mapa.getCelda(pos.getFila(),pos.getCol())==4 or mapa.getCelda(pos.getFila(),pos.getCol())==5:
        res=True
     
     return res
     
 # Devuelve si una posición de la ventana corresponde al mapa
-def esMapa(mapi, posicion):
+def esMapa(mapa, posicion):
     res=False     
     
-    if posicion[0] > MARGEN and posicion[0] < mapi.getAncho()*(TAM+MARGEN)+MARGEN and \
-    posicion[1] > MARGEN and posicion[1] < mapi.getAlto()*(TAM+MARGEN)+MARGEN:
+    if posicion[0] > MARGEN and posicion[0] < mapa.getAncho()*(TAM+MARGEN)+MARGEN and \
+    posicion[1] > MARGEN and posicion[1] < mapa.getAlto()*(TAM+MARGEN)+MARGEN:
         res= True       
     
     return res
     
 #Devuelve si se ha pulsado algún botón
-def pulsaBoton(mapi, posicion):
+def pulsaBoton(mapa, posicion):
     res=-1
     
-    if posicion[0] > (mapi.getAncho()*(TAM+MARGEN)+MARGEN)//2-65 and posicion[0] < (mapi.getAncho()*(TAM+MARGEN)+MARGEN)//2-15 and \
-       posicion[1] > mapi.getAlto()*(TAM+MARGEN)+MARGEN+10 and posicion[1] < MARGEN_INFERIOR+mapi.getAlto()*(TAM+MARGEN)+MARGEN:
+    if posicion[0] > (mapa.getAncho()*(TAM+MARGEN)+MARGEN)//2-65 and posicion[0] < (mapa.getAncho()*(TAM+MARGEN)+MARGEN)//2-15 and \
+       posicion[1] > mapa.getAlto()*(TAM+MARGEN)+MARGEN+10 and posicion[1] < MARGEN_INFERIOR+mapa.getAlto()*(TAM+MARGEN)+MARGEN:
         res=1
-    elif posicion[0] > (mapi.getAncho()*(TAM+MARGEN)+MARGEN)//2+15 and posicion[0] < (mapi.getAncho()*(TAM+MARGEN)+MARGEN)//2+65 and \
-       posicion[1] > mapi.getAlto()*(TAM+MARGEN)+MARGEN+10 and posicion[1] < MARGEN_INFERIOR+mapi.getAlto()*(TAM+MARGEN)+MARGEN:
+    elif posicion[0] > (mapa.getAncho()*(TAM+MARGEN)+MARGEN)//2+15 and posicion[0] < (mapa.getAncho()*(TAM+MARGEN)+MARGEN)//2+65 and \
+       posicion[1] > mapa.getAlto()*(TAM+MARGEN)+MARGEN+10 and posicion[1] < MARGEN_INFERIOR+mapa.getAlto()*(TAM+MARGEN)+MARGEN:
         res=2
 
     
     return res
    
 # Construye la matriz para guardar el camino
-def inic(mapi):    
+def inic(mapa):    
     cam=[]
-    for i in range(mapi.alto):        
+    for i in range(mapa.alto):        
         cam.append([])
-        for j in range(mapi.ancho):            
+        for j in range(mapa.ancho):            
             cam[i].append('.')
     
     return cam
@@ -75,11 +76,11 @@ def main():
     else:
         file=sys.argv[-1]
          
-    mapi=Mapa(file)     
-    camino=inic(mapi)   
+    mapa=Mapa(file)     
+    camino=inic(mapa)   
     
-    anchoVentana=mapi.getAncho()*(TAM+MARGEN)+MARGEN
-    altoVentana= MARGEN_INFERIOR+mapi.getAlto()*(TAM+MARGEN)+MARGEN    
+    anchoVentana=mapa.getAncho()*(TAM+MARGEN)+MARGEN
+    altoVentana= MARGEN_INFERIOR+mapa.getAlto()*(TAM+MARGEN)+MARGEN    
     dimension=[anchoVentana,altoVentana]
     screen=pygame.display.set_mode(dimension)
     pygame.display.set_caption("Practica 1")
@@ -109,13 +110,13 @@ def main():
                 running=False 
             if event.type==pygame.MOUSEBUTTONDOWN:
                 pos=pygame.mouse.get_pos()      
-                if pulsaBoton(mapi, pos)==1 or pulsaBoton(mapi, pos)==2:
+                if pulsaBoton(mapa, pos)==1 or pulsaBoton(mapa, pos)==2:
                     if origen.getFila()==-1 or destino.getFila()==-1:
                         print('Error: No hay origen o destino')
                     else:
-                        camino=inic(mapi)
-                        if pulsaBoton(mapi, pos)==1:
-                            a_star = AEstrella(mapi, origen, destino, tipo_heuristica=1)
+                        camino=inic(mapa)
+                        if pulsaBoton(mapa, pos)==1:
+                            a_star = AEstrella(mapa, origen, destino, tipo_heuristica=2)
                             caminos_nodos, coste, cal = a_star.estrella() 
                                      
                             if coste==-1:
@@ -124,18 +125,24 @@ def main():
                             else:
                                 for nodo in caminos_nodos:
                                     camino[nodo.getFila()][nodo.getCol()] = 'x'
-                        else:
-                            ###########################                                                   
-                            #coste, cal=llamar a A estrella subepsilon                       
-                            if coste==-1:
+                        # Segundo botón: Algoritmo A*ε
+                        elif pulsaBoton(mapa, pos) == 2:
+                            # Aquí se llama al algoritmo estrella_epsilon
+                            a_star_epsilon = AEstrellaEpsilon(mapa, origen, destino, tipo_heuristica=2)
+                            caminos_nodos, coste, cal = a_star_epsilon.estrella_epsilon(epsilon=1.1)  # Usa el valor de epsilon deseado
+
+                            if coste == -1:
                                 print('Error: No existe un camino válido entre origen y destino')
+                            else:
+                                for nodo in caminos_nodos:
+                                    camino[nodo.getFila()][nodo.getCol()] = 'x'
                             
-                elif esMapa(mapi,pos):                    
+                elif esMapa(mapa,pos):                    
                     if event.button==1: #botón izquierdo                        
                         colOrigen=pos[0]//(TAM+MARGEN)
                         filOrigen=pos[1]//(TAM+MARGEN)
                         casO=Casilla(filOrigen, colOrigen)                        
-                        if bueno(mapi, casO):
+                        if bueno(mapa, casO):
                             origen=casO
                         else: # se ha hecho click en una celda no accesible
                             print('Error: Esa casilla no es válida')
@@ -143,7 +150,7 @@ def main():
                         colDestino=pos[0]//(TAM+MARGEN)
                         filDestino=pos[1]//(TAM+MARGEN)
                         casD=Casilla(filDestino, colDestino)                        
-                        if bueno(mapi, casD):
+                        if bueno(mapa, casD):
                             destino=casD
                         else: # se ha hecho click en una celda no accesible
                             print('Error: Esa casilla no es válida')         
@@ -152,17 +159,17 @@ def main():
         #limpiar pantalla
         screen.fill(NEGRO)
         #pinta mapa
-        for fil in range(mapi.getAlto()):
-            for col in range(mapi.getAncho()):                
+        for fil in range(mapa.getAlto()):
+            for col in range(mapa.getAncho()):                
                 if camino[fil][col]!='.':
                     pygame.draw.rect(screen, AMARILLO, [(TAM+MARGEN)*col+MARGEN, (TAM+MARGEN)*fil+MARGEN, TAM, TAM], 0)
-                elif mapi.getCelda(fil,col)==0:
+                elif mapa.getCelda(fil,col)==0:
                     pygame.draw.rect(screen, HIERBA, [(TAM+MARGEN)*col+MARGEN, (TAM+MARGEN)*fil+MARGEN, TAM, TAM], 0)
-                elif mapi.getCelda(fil,col)==4:
+                elif mapa.getCelda(fil,col)==4:
                     pygame.draw.rect(screen, AGUA, [(TAM+MARGEN)*col+MARGEN, (TAM+MARGEN)*fil+MARGEN, TAM, TAM], 0)
-                elif mapi.getCelda(fil,col)==5:
+                elif mapa.getCelda(fil,col)==5:
                     pygame.draw.rect(screen, ROCA, [(TAM+MARGEN)*col+MARGEN, (TAM+MARGEN)*fil+MARGEN, TAM, TAM], 0)                                    
-                elif mapi.getCelda(fil,col)==1:
+                elif mapa.getCelda(fil,col)==1:
                     pygame.draw.rect(screen, MURO, [(TAM+MARGEN)*col+MARGEN, (TAM+MARGEN)*fil+MARGEN, TAM, TAM], 0)
                     
         #pinta origen
@@ -170,15 +177,15 @@ def main():
         #pinta destino
         screen.blit(objetivo, [(TAM+MARGEN)*destino.getCol()+MARGEN, (TAM+MARGEN)*destino.getFila()+MARGEN])       
         #pinta botón
-        screen.blit(boton1, [anchoVentana//2-65, mapi.getAlto()*(TAM+MARGEN)+MARGEN+10])
-        screen.blit(boton2, [anchoVentana//2+15, mapi.getAlto()*(TAM+MARGEN)+MARGEN+10])
+        screen.blit(boton1, [anchoVentana//2-65, mapa.getAlto()*(TAM+MARGEN)+MARGEN+10])
+        screen.blit(boton2, [anchoVentana//2+15, mapa.getAlto()*(TAM+MARGEN)+MARGEN+10])
         #pinta coste y energía
         if coste!=-1:            
             fuente= pygame.font.Font(None, 25)
             textoCoste=fuente.render("Coste: "+str(coste), True, AMARILLO)            
-            screen.blit(textoCoste, [anchoVentana-90, mapi.getAlto()*(TAM+MARGEN)+MARGEN+15])
+            screen.blit(textoCoste, [anchoVentana-90, mapa.getAlto()*(TAM+MARGEN)+MARGEN+15])
             textoEnergía=fuente.render("Cal: "+str(cal), True, AMARILLO)
-            screen.blit(textoEnergía, [5, mapi.getAlto()*(TAM+MARGEN)+MARGEN+15])
+            screen.blit(textoEnergía, [5, mapa.getAlto()*(TAM+MARGEN)+MARGEN+15])
             
         #actualizar pantalla
         pygame.display.flip()
