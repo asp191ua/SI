@@ -129,7 +129,7 @@ def main():
                         elif pulsaBoton(mapa, pos) == 2:
                             # Aquí se llama al algoritmo estrella_epsilon
                             a_star_epsilon = AEstrellaEpsilon(mapa, origen, destino, tipo_heuristica=2)
-                            caminos_nodos, coste, cal = a_star_epsilon.estrella_epsilon(epsilon=1.1)  # Usa el valor de epsilon deseado
+                            caminos_nodos, coste, cal = a_star_epsilon.estrella_epsilon(epsilon=1.1)  
 
                             if coste == -1:
                                 print('Error: No existe un camino válido entre origen y destino')

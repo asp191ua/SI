@@ -154,43 +154,34 @@ class AEstrellaEpsilon:
                 coste_movimiento = self.coste ((coste_x, coste_y))
 
                 gm = coste_movimiento + casilla_actual.g
-                nodo_vecino = Nodo (m, g=gm, h=self.heuristica(m, self.meta), padre=casilla_actual)
+                calorias_m = casilla_actual.calorias + self.tipo_calorias(m)
+                nodo_vecino = Nodo (m, g=gm, h=self.heuristica(m, self.meta), padre=casilla_actual, calorias=calorias_m)
 
                 # Si el nodo vecino ya está en la lista interior, continúa
                 if nodo_vecino in lista_interior:
                     continue
 
-                if nodo_vecino not in lista_frontera:
-                    
-                    nodo_vecino.calorias = self.calorias(nodo_vecino)  
+                if nodo_vecino not in lista_frontera:  
 
-                    nodo_vecino.f = nodo_vecino.calorias + nodo_vecino.h  
+                    nodo_vecino.f = nodo_vecino.g + nodo_vecino.h  
                     nodo_vecino.g = nodo_vecino.g  
                     nodo_vecino.h = nodo_vecino.h
-                    m.padre = casilla_actual
+                    nodo_vecino.padre = casilla_actual
+                    
+                    # nodo_vecino.calorias = self.calorias(nodo_vecino) + casilla_actual.calorias
                 
-            
                     heapq.heappush(lista_frontera, nodo_vecino)
-
-                # Si el nodo vecino ya está en la frontera, lo comprobamos para ver si encontramos un mejor camino (menos calorías acumuladas)
+                    
                 else:
+                   
                     for nodo in lista_frontera:
                         if nodo_vecino.casilla.getFila() == nodo.casilla.getFila() and nodo_vecino.casilla.getCol() == nodo.casilla.getCol():
-                           
-                            nuevo_calorias = self.calorias(nodo_vecino)
-                            
-                            # Primero, verifica si el camino tiene menos calorías
-                            if nuevo_calorias < nodo.calorias:
-                                nodo.g = nodo_vecino.g
-                                nodo.f = nodo.g + nodo.h  
-                                nodo.calorias = nuevo_calorias
-                                nodo.padre = casilla_actual
+                            if nodo_vecino.g < nodo.g:
                                 
-                            # Si el camino tiene las mismas calorías, prioriza el menor coste (g)
-                            elif nuevo_calorias == nodo.calorias and nodo_vecino.g < nodo.g:
                                 nodo.g = nodo_vecino.g
                                 nodo.f = nodo.g + nodo.h
                                 nodo.padre = casilla_actual
+                                nodo.calorias = calorias_m
                                 lista_frontera.remove(nodo)
                                 heapq.heappush (lista_frontera, nodo)
                                 break

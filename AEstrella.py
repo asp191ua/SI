@@ -91,7 +91,10 @@ class AEstrella:
             return self.heuristica_manhattan (casilla_origen, casilla_final)  
         
         elif self.tipo_heuristica == 2:
-            return self.heuristica_euclidea (casilla_origen, casilla_final)  
+            return self.heuristica_euclidea (casilla_origen, casilla_final) 
+        
+        elif self.tipo_heuristica == 3:
+            return self.chebyshev (casilla_origen, casilla_final) 
         
 
     def estrella (self):
