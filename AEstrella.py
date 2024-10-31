@@ -116,10 +116,17 @@ class AEstrella:
         lista_frontera = []
         heapq.heappush (lista_frontera, casilla_inicial)
         lista_interior = []
+        paso = 1
 
         while lista_frontera:
+            print(f"\n--- Paso {paso} ---")
+            paso += 1
             
             casilla_actual = heapq.heappop (lista_frontera)
+            
+            print(f"\nProcesando Nodo Actual: {casilla_actual}")
+            print(f"Nodo Padre: {casilla_actual.padre}")
+            print(f"g = {casilla_actual.g:.2f}, h = {casilla_actual.h:.2f}, f = {casilla_actual.f:.2f}\n")
 
             lista_interior.append (casilla_actual)
             nodos_explorados += 1
@@ -136,7 +143,7 @@ class AEstrella:
                 return self.construye_camino (casilla_actual), casilla_actual.g, self.calorias(casilla_actual)
 
             
-
+            print("Nodos Vecinos:")
             # Expande los nodos vecinos
             for m in self.hijos (casilla_actual):
                 fila = m.getFila()  
@@ -150,6 +157,10 @@ class AEstrella:
                 gm = coste_movimiento + casilla_actual.g
                 nodo_vecino = Nodo (m, g=gm, h=self.heuristica(m, self.meta), padre=casilla_actual)
 
+                
+                print(f"  Nodo Vecino: {nodo_vecino} | g = {nodo_vecino.g:.2f}, h = {nodo_vecino.h:.2f}, f = {nodo_vecino.f:.2f}")
+                
+                
                 # Si el nodo vecino ya está en la lista interior, continúa
                 if nodo_vecino in lista_interior:
                     continue
@@ -178,8 +189,15 @@ class AEstrella:
                                 lista_frontera.remove(nodo)
                                 heapq.heappush (lista_frontera, nodo)
                                 break
-                            
+                
+            # Imprimir el estado actual de la lista frontera y lista interior después de procesar cada nodo
+            print("\nEstado de la Lista Frontera:")
+            for nodo in lista_frontera:
+                print(f"  {nodo} | g = {nodo.g:.2f}, h = {nodo.h:.2f}, f = {nodo.f:.2f}")
 
+            print("\nEstado de la Lista Interior:")
+            for nodo in lista_interior:
+                print(f"  {nodo} | g = {nodo.g:.2f}, h = {nodo.h:.2f}, f = {nodo.f:.2f}")                    
         # Si no se encuentra un camino
         return None, -1, 0
 
